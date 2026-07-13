@@ -1,0 +1,21 @@
+# Applies to the backend Docker build (context = repo root, see render.yaml).
+# Only backend/ and evals/ are needed in the image.
+.git
+frontend/
+docs/
+examples/
+mock-services/
+.github/
+.claude/
+
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.py[cod]
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/data/
+backend/tests/.runtime/
+
+evals/reports/

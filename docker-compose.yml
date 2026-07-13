@@ -38,7 +38,9 @@ services:
       - "9010:9010"
 
   api:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       DATABASE_URL: postgresql+psycopg://intake_ai:intake_ai_dev@postgres:5432/intake_ai
       DOCUMENT_STORAGE_PATH: /app/data/documents
@@ -66,7 +68,9 @@ services:
         condition: service_started
 
   worker:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       DATABASE_URL: postgresql+psycopg://intake_ai:intake_ai_dev@postgres:5432/intake_ai
       DOCUMENT_STORAGE_PATH: /app/data/documents

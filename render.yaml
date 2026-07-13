@@ -6,7 +6,9 @@ services:
     name: healthcare-intake-api
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    # Repo root, not ./backend: the app also reads eval datasets from ../evals
+    # relative to itself, so the build needs both directories in context.
+    dockerContext: .
     plan: free
     healthCheckPath: /health/live
     envVars:
