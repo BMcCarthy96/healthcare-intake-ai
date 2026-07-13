@@ -1,0 +1,21 @@
+# Render blueprint for the public demo API.
+# Deploy: Render dashboard -> New -> Blueprint -> select this repo.
+# The Next.js frontend is deployed separately on Vercel (see README).
+services:
+  - type: web
+    name: healthcare-intake-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /health/live
+    envVars:
+      # Synthetic-data demo API: no auth, no PHI, so any origin may call it.
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: MODEL_PROVIDER
+        value: stub
+      # SQLite on the instance disk: resets on redeploy/cold start, which keeps
+      # the public demo clean and avoids the free-tier Postgres 30-day expiry.
+      - key: DATABASE_URL
+        value: sqlite:////app/data/healthcare_intake.db

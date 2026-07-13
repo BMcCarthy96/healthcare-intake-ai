@@ -1,0 +1,21 @@
+{
+  "id": "synthetic-049",
+  "category": "corrupt",
+  "expected_status": "failed",
+  "description": "Synthetic corrupt intake packet 049.",
+  "ground_truth": {
+    "case_reference": "INT-0049",
+    "member_identifier": "MEM-10049",
+    "requesting_organization": "Northstar Administrative Services",
+    "requesting_contact": "Jordan Lee",
+    "service_code": "ADM-204",
+    "requested_start_date": "2026-08-01"
+  },
+  "documents": [
+    {
+      "pages": [
+        ""
+      ]
+    }
+  ]
+}

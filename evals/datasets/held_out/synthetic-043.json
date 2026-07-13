@@ -1,0 +1,26 @@
+{
+  "id": "synthetic-043",
+  "category": "duplicate",
+  "expected_status": "failed",
+  "description": "Synthetic duplicate intake packet 043.",
+  "ground_truth": {
+    "case_reference": "INT-0043",
+    "member_identifier": "MEM-10043",
+    "requesting_organization": "Northstar Administrative Services",
+    "requesting_contact": "Jordan Lee",
+    "service_code": "ADM-204",
+    "requested_start_date": "2026-08-01"
+  },
+  "documents": [
+    {
+      "pages": [
+        "Synthetic Administrative Intake Packet\nCase Reference: INT-0043\nMember ID: MEM-10043\nRequesting Organization: Northstar Administrative Services\nRequesting Contact: Jordan Lee\nService Code: ADM-204\nRequested Start Date: 2026-08-01\n"
+      ]
+    },
+    {
+      "pages": [
+        "Synthetic Administrative Intake Packet\nCase Reference: INT-0043\nMember ID: MEM-10043\nRequesting Organization: Northstar Administrative Services\nRequesting Contact: Jordan Lee\nService Code: ADM-204\nRequested Start Date: 2026-08-01\n"
+      ]
+    }
+  ]
+}

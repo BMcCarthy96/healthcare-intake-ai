@@ -1,0 +1,21 @@
+{
+  "id": "synthetic-033",
+  "category": "missing",
+  "expected_status": "missing_information",
+  "description": "Synthetic missing intake packet 033.",
+  "ground_truth": {
+    "case_reference": "INT-0033",
+    "member_identifier": "MEM-10033",
+    "requesting_organization": "Northstar Administrative Services",
+    "requesting_contact": null,
+    "service_code": "ADM-204",
+    "requested_start_date": "2026-08-01"
+  },
+  "documents": [
+    {
+      "pages": [
+        "Synthetic Administrative Intake Packet\nCase Reference: INT-0033\nMember ID: MEM-10033\nRequesting Organization: Northstar Administrative Services\nService Code: ADM-204\nRequested Start Date: 2026-08-01\n"
+      ]
+    }
+  ]
+}

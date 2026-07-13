@@ -1,0 +1,37 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage.xml
+htmlcov/
+
+# Node
+node_modules/
+.next/
+dist/
+
+# Environment and runtime data
+.env
+.env.*
+!.env.example
+data/
+backend/data/
+backend/tests/.runtime/
+*.db
+
+# Generated evaluation artifacts
+evals/reports/*.json
+!evals/reports/.gitkeep
+
+# Test artifacts
+frontend/test-results/
+frontend/playwright-report/
+
+# Editor and OS
+.DS_Store
+Thumbs.db
+.vscode/
+.claude/

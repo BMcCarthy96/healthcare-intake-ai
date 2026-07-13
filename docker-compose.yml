@@ -1,0 +1,105 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: intake_ai
+      POSTGRES_USER: intake_ai
+      POSTGRES_PASSWORD: intake_ai_dev
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U intake_ai -d intake_ai"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  mock-export:
+    image: python:3.12-slim
+    working_dir: /app
+    volumes:
+      - ./mock-services/downstream-export:/app
+    command: python server.py
+    ports:
+      - "9010:9010"
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://intake_ai:intake_ai_dev@postgres:5432/intake_ai
+      DOCUMENT_STORAGE_PATH: /app/data/documents
+      DOCUMENT_STORAGE_BACKEND: s3
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_BUCKET: intake-documents
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+      ASYNC_PROCESSING: "true"
+      REDIS_URL: redis://redis:6379/0
+      MOCK_EXPORT_URL: http://mock-export:9010/exports
+    command: sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    volumes:
+      - ./backend:/app
+      - backend_venv:/app/.venv
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+
+  worker:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://intake_ai:intake_ai_dev@postgres:5432/intake_ai
+      DOCUMENT_STORAGE_PATH: /app/data/documents
+      DOCUMENT_STORAGE_BACKEND: s3
+      S3_ENDPOINT_URL: http://minio:9000
+      S3_BUCKET: intake-documents
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      ASYNC_PROCESSING: "true"
+      REDIS_URL: redis://redis:6379/0
+    command: uv run dramatiq app.tasks
+    volumes:
+      - ./backend:/app
+      - backend_venv:/app/.venv
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  frontend:
+    build: ./frontend
+    command: npm run dev -- --hostname 0.0.0.0
+    environment:
+      # The browser calls the API directly, so this must be reachable from the host.
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  backend_venv:

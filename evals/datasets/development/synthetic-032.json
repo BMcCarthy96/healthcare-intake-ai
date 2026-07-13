@@ -1,0 +1,21 @@
+{
+  "id": "synthetic-032",
+  "category": "missing",
+  "expected_status": "missing_information",
+  "description": "Synthetic missing intake packet 032.",
+  "ground_truth": {
+    "case_reference": "INT-0032",
+    "member_identifier": "MEM-10032",
+    "requesting_organization": "Northstar Administrative Services",
+    "requesting_contact": "Jordan Lee",
+    "service_code": "ADM-204",
+    "requested_start_date": null
+  },
+  "documents": [
+    {
+      "pages": [
+        "Synthetic Administrative Intake Packet\nCase Reference: INT-0032\nMember ID: MEM-10032\nRequesting Organization: Northstar Administrative Services\nRequesting Contact: Jordan Lee\nService Code: ADM-204\n"
+      ]
+    }
+  ]
+}

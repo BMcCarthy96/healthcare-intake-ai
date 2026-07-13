@@ -1,0 +1,21 @@
+{
+  "id": "synthetic-040",
+  "category": "contradictory",
+  "expected_status": "review_required",
+  "description": "Synthetic contradictory intake packet 040.",
+  "ground_truth": {
+    "case_reference": "INT-0040",
+    "member_identifier": "MEM-10040",
+    "requesting_organization": "Northstar Administrative Services",
+    "requesting_contact": "Jordan Lee",
+    "service_code": "ADM-204",
+    "requested_start_date": "2026-08-01"
+  },
+  "documents": [
+    {
+      "pages": [
+        "Synthetic Administrative Intake Packet\nCase Reference: INT-0040\nMember ID: MEM-10040\nRequesting Organization: Northstar Administrative Services\nRequesting Contact: Jordan Lee\nService Code: ADM-204\nRequested Start Date: 2026-08-01\nService Code: ALT-0040\n"
+      ]
+    }
+  ]
+}
