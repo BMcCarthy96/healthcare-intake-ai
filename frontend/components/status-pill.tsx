@@ -8,9 +8,10 @@ const labels: Record<CaseStatus, string> = {
   missing_information: "Missing information",
   review_required: "Review required",
   failed: "Needs attention",
+  exporting: "Exporting",
   completed: "Completed",
 };
 
 export function StatusPill({ status }: { status: CaseStatus }) {
-  return <span className={`status status--${status}`}>{labels[status]}</span>;
+  return <span className={`status status--${status}`}>{labels[status] || status.replaceAll("_", " ")}</span>;
 }

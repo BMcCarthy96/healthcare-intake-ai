@@ -11,6 +11,7 @@ class CaseStatus(StrEnum):
     MISSING_INFORMATION = "missing_information"
     REVIEW_REQUIRED = "review_required"
     FAILED = "failed"
+    EXPORTING = "exporting"
     COMPLETED = "completed"
 
 
@@ -30,7 +31,8 @@ ALLOWED_TRANSITIONS: dict[CaseStatus, set[CaseStatus]] = {
     },
     CaseStatus.MISSING_INFORMATION: {CaseStatus.QUEUED},
     CaseStatus.FAILED: {CaseStatus.QUEUED},
-    CaseStatus.READY_FOR_EXPORT: {CaseStatus.COMPLETED},
+    CaseStatus.READY_FOR_EXPORT: {CaseStatus.EXPORTING},
+    CaseStatus.EXPORTING: {CaseStatus.COMPLETED, CaseStatus.READY_FOR_EXPORT, CaseStatus.FAILED},
     CaseStatus.COMPLETED: set(),
 }
 

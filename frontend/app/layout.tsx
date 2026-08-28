@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "IntakeFlow | Healthcare Intake AI",
-  description: "Synthetic administrative document-to-action workflow engine",
+  title: "IntakeFlow | Evidence-first intake operations",
+  description: "A synthetic, auditable healthcare administrative intake workflow.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

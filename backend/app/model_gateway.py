@@ -39,11 +39,23 @@ class StubModelGateway:
         "requesting_contact": r"(?:Requesting Contact|Contact):\s*([^\n]+)",
         "service_code": r"(?:Service Code|Requested Service):\s*([^\n]+)",
         "requested_start_date": r"(?:Requested Start Date|Start Date):\s*([^\n]+)",
+        "requested_service_date": r"(?:Requested Service Date|Service Date):\s*([^\n]+)",
+        "patient_name": r"(?:Patient Name|Member Name):\s*([^\n]+)",
+        "date_of_birth": r"(?:Date of Birth|DOB):\s*([^\n]+)",
+        "payer_name": r"(?:Payer|Payer Name|Insurance):\s*([^\n]+)",
+        "group_number": r"(?:Group Number|Group ID):\s*([^\n]+)",
+        "provider_name": r"(?:Requesting Provider|Provider Name):\s*([^\n]+)",
+        "provider_npi": r"(?:Provider NPI|NPI):\s*([^\n]+)",
+    }
+    _LIST_PATTERNS = {
+        "procedure_codes": r"(?:Procedure Codes|Procedure Code|CPT):\s*([^\n]+)",
+        "diagnosis_codes": r"(?:Diagnosis Codes|Diagnosis Code|ICD-10):\s*([^\n]+)",
     }
 
     def extract(self, page_texts: list[str]) -> ModelResult:
         started = time.perf_counter()
-        values: dict[str, str | None] = {name: None for name in self._FIELD_PATTERNS}
+        values: dict[str, str | list[str] | None] = {name: None for name in self._FIELD_PATTERNS}
+        values.update({name: [] for name in self._LIST_PATTERNS})
         fields: list[ExtractedField] = []
         document_types: list[str] = []
         for page_number, page_text in enumerate(page_texts, start=1):
@@ -67,11 +79,19 @@ class StubModelGateway:
                             evidence=Evidence(page_number=page_number, quote=quote, confidence=0.98),
                         )
                     )
-        record = IntakeRecord(
-            **values,
-            document_types_present=sorted(set(document_types)) or ["administrative_packet"],
-            fields=fields,
-            notes="Extraction proposal generated from synthetic document text.",
+            for name, pattern in self._LIST_PATTERNS.items():
+                if values[name]:
+                    continue
+                match = re.search(pattern, page_text, flags=re.IGNORECASE)
+                if match:
+                    values[name] = [item.strip() for item in re.split(r"[,;\s]+", match.group(1)) if item.strip()]
+        record = IntakeRecord.model_validate(
+            {
+                **values,
+                "document_types_present": sorted(set(document_types)) or ["administrative_packet"],
+                "fields": fields,
+                "notes": "Extraction proposal generated from synthetic document text.",
+            }
         )
         duration_ms = int((time.perf_counter() - started) * 1000)
         return ModelResult(

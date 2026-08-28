@@ -1,8 +1,8 @@
 {
   "id": "synthetic-036",
-  "category": "contradictory",
-  "expected_status": "review_required",
-  "description": "Synthetic contradictory intake packet 036.",
+  "category": "complete",
+  "expected_status": "ready_for_export",
+  "description": "Synthetic complete intake packet 036.",
   "ground_truth": {
     "case_reference": "INT-0036",
     "member_identifier": "MEM-10036",
@@ -14,7 +14,7 @@
   "documents": [
     {
       "pages": [
-        "Synthetic Administrative Intake Packet\nCase Reference: INT-0036\nMember ID: MEM-10036\nRequesting Organization: Northstar Administrative Services\nRequesting Contact: Jordan Lee\nService Code: ADM-204\nRequested Start Date: 2026-08-01\nMember ID: ALT-0036\n"
+        "Synthetic Administrative Intake Packet\nCase Reference: INT-0036\nMember ID: MEM-10036\nRequesting Organization: Northstar Administrative Services\nRequesting Contact: Jordan Lee\nService Code: ADM-204\nRequested Start Date: 2026-08-01\n"
       ]
     }
   ]
