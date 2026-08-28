@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StatusPill } from "@/components/status-pill";
 import { TourCoach } from "@/components/tour-coach";
 import { ApiError, api, CaseSummary, clearDemoSession, DemoManifest, setDemoSession } from "@/lib/api";
@@ -18,6 +18,8 @@ function timeInState(value?: string) {
 
 export default function DemoPage() {
   const router = useRouter();
+  const bootstrapStarted = useRef(false);
+  const provisionInFlight = useRef<Promise<void> | null>(null);
   const [manifest, setManifest] = useState<DemoManifest | null>(null);
   const [cases, setCases] = useState<CaseSummary[]>([]);
   const [index, setIndex] = useState(() => {
@@ -50,22 +52,43 @@ export default function DemoPage() {
     }
   }, []);
 
-  const provision = useCallback(async () => {
+  const provision = useCallback(() => {
+    if (provisionInFlight.current) return provisionInFlight.current;
+    setLoading(true);
+    setError(null);
+    setManifest(null);
+    setCases([]);
     clearDemoSession();
-    const session = await api.startDemo();
-    setDemoSession(session);
-    setIndex(0);
-    setTourActive(true);
-    await load();
+    const task = (async () => {
+      try {
+        const session = await api.startDemo();
+        setDemoSession(session);
+        setIndex(0);
+        setTourActive(true);
+        await load();
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : "Unable to provision the demo workspace.");
+        setLoading(false);
+        throw reason;
+      }
+    })();
+    provisionInFlight.current = task;
+    void task.then(
+      () => { if (provisionInFlight.current === task) provisionInFlight.current = null; },
+      () => { if (provisionInFlight.current === task) provisionInFlight.current = null; },
+    );
+    return task;
   }, [load]);
 
   useEffect(() => {
+    if (bootstrapStarted.current) return;
+    bootstrapStarted.current = true;
     if (!window.sessionStorage.getItem("intakeflow-demo-token")) {
       // The async bootstrap synchronizes the remote session after mount.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       void provision().catch((reason: unknown) => { setError(reason instanceof Error ? reason.message : "Unable to provision the demo workspace."); setLoading(false); });
     } else {
       // The async bootstrap synchronizes the remote session after mount.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       void load().catch((reason: unknown) => {
         if (reason instanceof ApiError && [401, 410].includes(reason.status)) {
           void provision().catch((retryReason: unknown) => {
@@ -130,7 +153,7 @@ export default function DemoPage() {
   }
 
   if (loading && !manifest) return <main className="shell"><div className="loading-page"><span className="spinner" />Provisioning your isolated synthetic workspace…</div></main>;
-  if (!manifest) return <main className="shell"><header className="topbar"><Link href="/" className="brand"><span className="brand-mark">I</span><span><strong>IntakeFlow</strong><small>Live synthetic workspace</small></span></Link></header><div className="case-load-error"><div className="alert" role="alert">{error || "The demo workspace could not be loaded."}</div><button onClick={() => void retryLoad()}>Retry provisioning</button><Link className="button-link secondary" href="/">Return home</Link></div></main>;
+  if (!manifest) return <main className="shell"><header className="topbar"><Link href="/" className="brand"><span className="brand-mark">I</span><span><strong>IntakeFlow</strong><small>Live synthetic workspace</small></span></Link></header><div className="case-load-error"><div className="alert" role="alert">{error || "The demo workspace could not be loaded."}</div><button onClick={() => { void provision().catch(() => undefined); }}>Start fresh workspace</button><Link className="button-link secondary" href="/">Return home</Link></div></main>;
   return <main className="shell demo-shell">
     <header className="topbar"><Link href="/" className="brand"><span className="brand-mark">I</span><span><strong>IntakeFlow</strong><small>Live synthetic workspace</small></span></Link><nav className="topnav"><Link href="/proof">Technical proof</Link><button className="text-button" onClick={() => void reset()}>Reset workspace</button></nav></header>
     <div className="demo-banner"><div><span className="live-dot" /> ISOLATED DEMO WORKSPACE</div><span>Expires {manifest ? new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(manifest.expires_at)) : "soon"} · No real data</span></div>

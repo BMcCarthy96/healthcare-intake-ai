@@ -27,6 +27,40 @@ const session = {
   scenarios,
 };
 
+test("an expired recruiter session provisions a fresh workspace", async ({ page }) => {
+  let sessionStarts = 0;
+
+  await page.addInitScript(() => {
+    window.sessionStorage.setItem("intakeflow-demo-token", "expired-token");
+    window.sessionStorage.setItem("intakeflow-demo-session", "expired-workspace");
+  });
+  await page.route("**/v1/demo/sessions", async (route) => {
+    sessionStarts += 1;
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(session) });
+  });
+  await page.route("**/v1/demo/manifest", async (route) => {
+    if (route.request().headers()["x-demo-session"] === "expired-token") {
+      await route.fulfill({ status: 410, contentType: "application/json", body: JSON.stringify({ detail: { message: "Demo session expired. Start a new walkthrough." } }) });
+      return;
+    }
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ ...session, token: undefined }) });
+  });
+  await page.route("**/v1/cases", async (route) => {
+    if (route.request().headers()["x-demo-session"] === "expired-token") {
+      await route.fulfill({ status: 410, contentType: "application/json", body: JSON.stringify({ detail: { message: "Demo session expired. Start a new walkthrough." } }) });
+      return;
+    }
+    await route.fulfill({ contentType: "application/json", body: JSON.stringify(scenarios.map((item) => ({ id: item.case_id, external_reference: item.id, status: item.status, source: "demo", scenario: item.id, document_count: item.id === "exception-recovery" ? 2 : 1, issue_count: item.id === "exception-recovery" ? 2 : 0 }))) });
+  });
+
+  await page.goto("/demo");
+
+  await expect(page.getByRole("heading", { name: "Five synthetic scenarios" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Walkthrough step 1 of 7" })).toBeVisible();
+  expect(sessionStarts).toBe(1);
+  await expect.poll(() => page.evaluate(() => window.sessionStorage.getItem("intakeflow-demo-token"))).toBe("token-e2e");
+});
+
 test("seven-step walkthrough performs the real correction and idempotent export recovery", async ({ page }) => {
   let reviewed = false;
   let exportCalls = 0;
