@@ -1,0 +1,21 @@
+{
+  "id": "synthetic-119",
+  "category": "format_variation",
+  "expected_status": "ready_for_export",
+  "description": "Synthetic format_variation intake packet 119.",
+  "ground_truth": {
+    "case_reference": "INT-0119",
+    "member_identifier": "MEM-10119",
+    "requesting_organization": "Northstar Administrative Services",
+    "requesting_contact": "Jordan Lee",
+    "service_code": "ADM-204",
+    "requested_start_date": "2026-08-01"
+  },
+  "documents": [
+    {
+      "pages": [
+        "Synthetic Administrative Intake Packet\nCase Reference: INT-0119\nMember Identifier: MEM-10119\nRequesting Organization: Northstar Administrative Services\nRequesting Contact: Jordan Lee\nService Code: ADM-204\nStart Date: 2026-08-01\n"
+      ]
+    }
+  ]
+}

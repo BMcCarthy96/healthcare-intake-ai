@@ -11,3 +11,6 @@ Load only the documents and source files needed for the task.
 | Evaluations | `backend/app/evaluations.py`, `evals/datasets/` |
 | UI | `frontend/app/`, `frontend/components/` |
 | Deployment | `docker-compose.yml`, `.github/workflows/` |
+| Recruiter proof | `frontend/app/proof/`, `backend/scripts/generate_proof_manifest.py`, `GET /v1/proof` |
+| Guided demo | `backend/app/demo.py`, `frontend/app/demo/`, `frontend/components/tour-coach.tsx`, `docs/walkthrough.md` |
+| Architecture decisions | `docs/adr/0001-model-boundary.md`, `docs/adr/0002-idempotent-export.md`, `docs/adr/0003-demo-isolation.md`, `docs/adr/0004-ocr-evidence.md` |

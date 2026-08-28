@@ -1,5 +1,12 @@
 name: CI
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
   push:
@@ -8,21 +15,31 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v6
       - run: uv sync --extra dev
-      - run: uv run ruff check app tests
+      - run: uv run ruff check app tests scripts migrations
       - run: DATABASE_URL=sqlite:///./migration-ci.db uv run alembic upgrade head
-      - run: uv run pytest -q
+      - run: uv run pytest -q --cov=app --cov-report=term-missing --cov-report=json --cov-fail-under=80 --junitxml=pytest-report.xml
       - run: uv run mypy app
       - run: uv run python scripts/generate_eval_cases.py
+      - run: git diff --exit-code -- ../evals/datasets
+      - run: uv run python scripts/generate_proof_manifest.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recruiter-proof
+          path: evals/reports/recruiter-proof.json
 
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_DISABLE_STANDALONE: "true"
     defaults:
       run:
         working-directory: frontend
@@ -34,7 +51,15 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm audit --audit-level=high
       - run: npm run lint
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          if-no-files-found: ignore
+          retention-days: 7

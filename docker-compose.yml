@@ -34,6 +34,8 @@ services:
     volumes:
       - ./mock-services/downstream-export:/app
     command: python server.py
+    environment:
+      DOWNSTREAM_HMAC_SECRET: local-compose-secret-change-me
     ports:
       - "9010:9010"
 
@@ -53,12 +55,22 @@ services:
       ASYNC_PROCESSING: "true"
       REDIS_URL: redis://redis:6379/0
       MOCK_EXPORT_URL: http://mock-export:9010/exports
+      MOCK_EXPORT_MODE: success
+      DOWNSTREAM_HMAC_SECRET: local-compose-secret-change-me
+      APP_VERSION: 0.2.0
+      OCR_ENABLED: "true"
+      ALLOW_PUBLIC_UPLOADS: "true"
     command: sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000"
     volumes:
       - ./backend:/app
       - backend_venv:/app/.venv
     ports:
       - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
     depends_on:
       postgres:
         condition: service_healthy
@@ -81,6 +93,8 @@ services:
       S3_SECRET_KEY: minioadmin
       ASYNC_PROCESSING: "true"
       REDIS_URL: redis://redis:6379/0
+      APP_VERSION: 0.2.0
+      OCR_ENABLED: "true"
     command: uv run dramatiq app.tasks
     volumes:
       - ./backend:/app

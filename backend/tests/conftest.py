@@ -3,10 +3,14 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-TEST_ROOT = Path(__file__).resolve().parent / ".runtime"
+TEST_ROOT = Path(
+    os.environ.get("TEST_RUNTIME_ROOT", Path(__file__).resolve().parent / ".runtime")
+)
 TEST_ROOT.mkdir(parents=True, exist_ok=True)
 os.environ["DATABASE_URL"] = f"sqlite:///{(TEST_ROOT / 'test.db').as_posix()}"
 os.environ["DOCUMENT_STORAGE_PATH"] = str(TEST_ROOT / "documents")
+os.environ["ALLOW_PUBLIC_UPLOADS"] = "true"
+os.environ["ENABLE_PUBLIC_EVALS"] = "true"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

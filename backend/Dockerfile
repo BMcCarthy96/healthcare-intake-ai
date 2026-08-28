@@ -1,5 +1,8 @@
 FROM python:3.12-slim
 WORKDIR /app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tesseract-ocr \
+    && rm -rf /var/lib/apt/lists/*
 # Build context is the repo root (see render.yaml) so evals/ is reachable as a
 # sibling of /app, mirroring the local layout that app/evaluations.py expects.
 COPY backend/ ./

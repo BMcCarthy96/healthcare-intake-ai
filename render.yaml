@@ -1,7 +1,18 @@
-# Render blueprint for the public demo API.
+# Render blueprint for the public demo API and worker.
 # Deploy: Render dashboard -> New -> Blueprint -> select this repo.
-# The Next.js frontend is deployed separately on Vercel (see README).
+# The Next.js frontend is deployed separately on Vercel with Root Directory=frontend.
 services:
+  - type: pserv
+    name: healthcare-intake-mock-export
+    runtime: python
+    rootDir: mock-services/downstream-export
+    plan: starter
+    buildCommand: python -m compileall server.py
+    startCommand: python server.py
+    envVars:
+      - key: DOWNSTREAM_HMAC_SECRET
+        generateValue: true
+
   - type: web
     name: healthcare-intake-api
     runtime: docker
@@ -9,15 +20,111 @@ services:
     # Repo root, not ./backend: the app also reads eval datasets from ../evals
     # relative to itself, so the build needs both directories in context.
     dockerContext: .
-    plan: free
-    healthCheckPath: /health/live
+    plan: starter
+    healthCheckPath: /health/ready
     envVars:
-      # Synthetic-data demo API: no auth, no PHI, so any origin may call it.
+      # Restrict browser calls to the deployed frontend and local development.
       - key: CORS_ORIGINS
-        value: "*"
+        sync: false
       - key: MODEL_PROVIDER
         value: stub
-      # SQLite on the instance disk: resets on redeploy/cold start, which keeps
-      # the public demo clean and avoids the free-tier Postgres 30-day expiry.
+      - key: ASYNC_PROCESSING
+        value: "true"
+      - key: DEMO_SESSION_TTL_MINUTES
+        value: "60"
+      - key: ALLOW_PUBLIC_UPLOADS
+        value: "false"
+      - key: OCR_ENABLED
+        value: "true"
+      - key: ENABLE_LIVE_MODEL_COMPARE
+        value: "false"
+      - key: ENABLE_PUBLIC_EVALS
+        value: "false"
+      - key: AUTO_SEED_PROOF
+        value: "true"
+      - key: MODEL_COMPARE_DAILY_BUDGET
+        value: "10"
+      - key: MODEL_COMPARE_CIRCUIT_FAILURE_THRESHOLD
+        value: "3"
+      - key: MODEL_COMPARE_CIRCUIT_WINDOW_MINUTES
+        value: "10"
+      - key: DOWNSTREAM_HMAC_SECRET
+        fromService:
+          type: pserv
+          name: healthcare-intake-mock-export
+          envVarKey: DOWNSTREAM_HMAC_SECRET
+      - key: MOCK_EXPORT_HOSTPORT
+        fromService:
+          type: pserv
+          name: healthcare-intake-mock-export
+          property: hostport
+      - key: MOCK_EXPORT_MODE
+        value: success
+      - key: APP_VERSION
+        value: "0.2.0"
+      - key: FRONTEND_COMMIT_SHA
+        sync: false
+      - key: BUILD_TIME
+        sync: false
       - key: DATABASE_URL
-        value: sqlite:////app/data/healthcare_intake.db
+        fromDatabase:
+          name: healthcare-intake-db
+          property: connectionString
+      - key: DOCUMENT_STORAGE_BACKEND
+        value: s3
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: S3_BUCKET
+        value: intake-documents
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: healthcare-intake-redis
+          property: connectionString
+
+  - type: worker
+    name: healthcare-intake-worker
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: starter
+    startCommand: uv run dramatiq app.tasks
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: healthcare-intake-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: healthcare-intake-redis
+          property: connectionString
+      - key: DOCUMENT_STORAGE_BACKEND
+        value: s3
+      - key: MODEL_PROVIDER
+        value: stub
+      - key: OCR_ENABLED
+        value: "true"
+      - key: ALLOW_PUBLIC_UPLOADS
+        value: "false"
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: S3_BUCKET
+        value: intake-documents
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+
+  - type: keyvalue
+    name: healthcare-intake-redis
+    plan: starter
+    ipAllowList: []
+
+databases:
+  - name: healthcare-intake-db
+    plan: basic-256mb

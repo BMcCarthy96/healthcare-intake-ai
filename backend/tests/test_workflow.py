@@ -57,7 +57,11 @@ def test_clean_case_processes_and_exports_idempotently(client) -> None:
     assert blocked_export.status_code == 409
     approved = client.post(
         f"/v1/cases/{case_id}/review",
-        json={"action": "approve", "reviewer": "test-reviewer"},
+        json={
+            "action": "approve",
+            "reviewer": "test-reviewer",
+            "extraction_id": detail["latest_extraction_id"],
+        },
     )
     assert approved.status_code == 200, approved.text
     exported = client.post(f"/v1/cases/{case_id}/export", headers={"Idempotency-Key": "export-clean-001"})
@@ -92,16 +96,20 @@ def test_evaluation_runs_real_pipeline_with_perfect_stub_baseline(client) -> Non
     response = client.post("/v1/evals?dataset=development")
     assert response.status_code == 200, response.text
     payload = response.json()
-    assert payload["total_cases"] == 40
+    assert payload["total_cases"] == 80
     assert payload["routing_accuracy"] == 1.0
     assert payload["field_accuracy"] == 1.0
-    assert all(result["fields_compared"] == 6 for result in payload["results"])
+    assert {result["fields_compared"] for result in payload["results"]} <= {0, 6}
+    assert payload["routing_macro_f1"] == 1.0
+    assert payload["field_macro_f1"] == 1.0
+    assert payload["false_ready_count"] == 0
+    assert payload["evidence_validity"] == 1.0
     history = client.get("/v1/evals")
     assert history.status_code == 200
     assert history.json()[0]["id"] == payload["id"]
     detail = client.get(f"/v1/evals/{payload['id']}")
     assert detail.status_code == 200
-    assert detail.json()["matched_cases"] == 40
+    assert detail.json()["matched_cases"] == 80
 
 
 def test_evaluation_detects_mismatches_instead_of_echoing_labels() -> None:

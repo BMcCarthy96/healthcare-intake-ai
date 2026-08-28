@@ -1,0 +1,21 @@
+{
+  "id": "synthetic-083",
+  "category": "missing",
+  "expected_status": "missing_information",
+  "description": "Synthetic missing intake packet 083.",
+  "ground_truth": {
+    "case_reference": "INT-0083",
+    "member_identifier": "MEM-10083",
+    "requesting_organization": "Northstar Administrative Services",
+    "requesting_contact": "Jordan Lee",
+    "service_code": null,
+    "requested_start_date": "2026-08-01"
+  },
+  "documents": [
+    {
+      "pages": [
+        "Synthetic Administrative Intake Packet\nCase Reference: INT-0083\nMember ID: MEM-10083\nRequesting Organization: Northstar Administrative Services\nRequesting Contact: Jordan Lee\nRequested Start Date: 2026-08-01\n"
+      ]
+    }
+  ]
+}

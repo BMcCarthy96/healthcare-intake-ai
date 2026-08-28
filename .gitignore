@@ -6,6 +6,9 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 coverage.xml
+coverage.json
+.coverage
+pytest-report.xml
 htmlcov/
 
 # Node
