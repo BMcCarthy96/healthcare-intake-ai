@@ -92,7 +92,7 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     plan: starter
-    startCommand: uv run dramatiq app.tasks
+    dockerCommand: uv run dramatiq app.tasks
     envVars:
       - key: DATABASE_URL
         fromDatabase:
