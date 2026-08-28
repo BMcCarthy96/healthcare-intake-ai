@@ -21,6 +21,8 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
+      - name: Install OCR runtime
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --extra dev
       - run: uv run ruff check app tests scripts migrations

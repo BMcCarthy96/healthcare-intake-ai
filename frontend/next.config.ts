@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: process.env.NEXT_DISABLE_STANDALONE === "true" ? undefined : "standalone",
+  turbopack: {
+    root: process.cwd(),
+  },
+  // Vercel manages its own server output; Docker keeps the portable standalone bundle.
+  output:
+    process.env.VERCEL === "1" || process.env.NEXT_DISABLE_STANDALONE === "true"
+      ? undefined
+      : "standalone",
   distDir: process.env.NEXT_DIST_DIR || ".next",
   allowedDevOrigins: ["localhost", "127.0.0.1"],
   env: {
